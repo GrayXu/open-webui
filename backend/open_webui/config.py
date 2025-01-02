@@ -995,19 +995,24 @@ TITLE_GENERATION_PROMPT_TEMPLATE = PersistentConfig(
     os.environ.get("TITLE_GENERATION_PROMPT_TEMPLATE", ""),
 )
 
-DEFAULT_TITLE_GENERATION_PROMPT_TEMPLATE = """Create a concise, 3-5 word title with an emoji as a title for the chat history, in the given language. Suitable Emojis for the summary can be used to enhance understanding but avoid quotation marks or special formatting. RESPOND ONLY WITH THE TITLE TEXT.
+DEFAULT_TITLE_GENERATION_PROMPT_TEMPLATE = """为下面的查询，按照生成简洁标题:
+"{{prompt:middletruncate:4000}}"
+"{{MESSAGES:MIDDLETRUNCATE:4000}}"
 
-Examples of titles:
-📉 Stock Market Trends
-🍪 Perfect Chocolate Chip Recipe
-Evolution of Music Streaming
-Remote Work Productivity Tips
-Artificial Intelligence in Healthcare
-🎮 Video Game Development Insights
+1. 若是普通查询:
+- 3-5字短语
+- 1个emoji前缀
+- 无引号、星号或特殊格式
+示例: `📉 股市趋势`
 
-<chat_history>
-{{MESSAGES:END:2}}
-</chat_history>"""
+2. 若是论文解析查询:  
+- 获取查询中提取的paper identifier
+- 1个emoji前缀
+- 保留单引号，无星号和其他特殊格式
+
+示例: `📄 SOSP'24 Aceso`
+
+仅输出最终标题，无需解释。"""
 
 
 TAGS_GENERATION_PROMPT_TEMPLATE = PersistentConfig(
@@ -1161,7 +1166,9 @@ Message: ```{{prompt}}```"""
 
 DEFAULT_MOA_GENERATION_PROMPT_TEMPLATE = """You have been provided with a set of responses from various models to the latest user query: "{{prompt}}"
 
-Your task is to synthesize these responses into a single, high-quality response. It is crucial to critically evaluate the information provided in these responses, recognizing that some of it may be biased or incorrect. Your response should not simply replicate the given answers but should offer a refined, accurate, and comprehensive reply to the instruction. Ensure your response is well-structured, coherent, and adheres to the highest standards of accuracy and reliability.
+Your first task is to score the quality of the responses for this series of different models, considering accuracy, completeness, and conciseness. The maximum score is 10.
+
+Your second task is to synthesize these responses into a single, high-quality response. It is crucial to critically evaluate the information provided in these responses, recognizing that some of it may be biased or incorrect. Your response should not simply replicate the given answers but should offer a refined, accurate, and comprehensive reply to the instruction. Ensure your response is well-structured, coherent, and adheres to the highest standards of accuracy and reliability.
 
 Responses from models: {{responses}}"""
 

@@ -1152,10 +1152,14 @@ async def process_chat_response(
                             if not raw:
                                 content = f'{content}\n<details type="tool_calls" done="false" content="{html.escape(json.dumps(block_content))}">\n<summary>Tool Executing...</summary>\n{tool_calls_display_content}\n</details>\n'
 
+                    # Reasoning
                     elif block["type"] == "reasoning":
+                        # reasoning_display_content = "\n".join(
+                        #     (f"> {line}" if not line.startswith(">") else line)
+                        #     for line in block["content"].splitlines()
+                        # )
                         reasoning_display_content = "\n".join(
-                            (f"> {line}" if not line.startswith(">") else line)
-                            for line in block["content"].splitlines()
+                            line for line in block["content"].splitlines()
                         )
 
                         reasoning_duration = block.get("duration", None)

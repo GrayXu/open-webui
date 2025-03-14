@@ -1274,7 +1274,7 @@ async def process_chat_response(
                         if content_type != "reasoning":
                             start_tag_pattern = rf"<{re.escape(start_tag)}(\s.*?)?>"
                         else:
-                            start_tag_pattern = rf"^<{re.escape(start_tag)}(\s.*?)?>"
+                            start_tag_pattern = rf"^\s*<{re.escape(start_tag)}(\s.*?)?>"
 
                         match = re.search(start_tag_pattern, content)
                         if match:

@@ -1314,8 +1314,10 @@ async def process_chat_response(
                 elif content_blocks[-1]["type"] == content_type:
                     start_tag = content_blocks[-1]["start_tag"]
                     end_tag = content_blocks[-1]["end_tag"]
-                    # Match end tag e.g., </tag>
-                    end_tag_pattern = rf"<{re.escape(end_tag)}>"
+                    if content_type != "reasoning":
+                        end_tag_pattern = rf"^\s*<{re.escape(end_tag)}>"
+                    else:
+                        end_tag_pattern = rf"<{re.escape(end_tag)}>"
 
                     # Check if the content has the end tag
                     if re.search(end_tag_pattern, content):

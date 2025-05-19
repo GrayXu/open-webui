@@ -1215,7 +1215,6 @@ async def process_chat_response(
             
             def serialize_content_blocks(content_blocks, raw=False):
                 content = ""
-                # thinking_finished = False # Remove this line
                 for block in content_blocks:
                     if block["type"] == "text":
                         content = f"{content}{block['content'].strip()}\n"
@@ -1271,25 +1270,23 @@ async def process_chat_response(
                                 content = f"{content}\n{tool_calls_display_content}\n\n"
 
                     elif block["type"] == "reasoning":
-                        # if not post_response_handler.thinking_finished:
-                        if True:
-                            reasoning_display_content = "\n".join(
-                                (f"> {line}" if not line.startswith(">") else line)
-                                for line in block["content"].splitlines()
-                            )
+                        reasoning_display_content = "\n".join(
+                            (f"> {line}" if not line.startswith(">") else line)
+                            for line in block["content"].splitlines()
+                        )
 
-                            reasoning_duration = block.get("duration", None)
+                        reasoning_duration = block.get("duration", None)
 
-                            if reasoning_duration is not None:
-                                if raw:
-                                    content = f'{content}\n<{block["start_tag"]}>{block["content"]}<{block["end_tag"]}>\n'
-                                else:
-                                    content = f'{content}\n<details type="reasoning" done="true" duration="{reasoning_duration}">\n<summary>Thought for {reasoning_duration} seconds</summary>\n{reasoning_display_content}\n</details>\n'
+                        if reasoning_duration is not None:
+                            if raw:
+                                content = f'{content}\n<{block["start_tag"]}>{block["content"]}<{block["end_tag"]}>\n'
                             else:
-                                if raw:
-                                    content = f'{content}\n<{block["start_tag"]}>{block["content"]}<{block["end_tag"]}>\n'
-                                else:
-                                    content = f'{content}\n<details type="reasoning" done="false">\n<summary>Thinking…</summary>\n{reasoning_display_content}\n</details>\n'
+                                content = f'{content}\n<details type="reasoning" done="true" duration="{reasoning_duration}">\n<summary>Thought for {reasoning_duration} seconds</summary>\n{reasoning_display_content}\n</details>\n'
+                        else:
+                            if raw:
+                                content = f'{content}\n<{block["start_tag"]}>{block["content"]}<{block["end_tag"]}>\n'
+                            else:
+                                content = f'{content}\n<details type="reasoning" done="false">\n<summary>Thinking…</summary>\n{reasoning_display_content}\n</details>\n'
 
                     elif block["type"] == "code_interpreter":
                         attributes = block.get("attributes", {})
@@ -1385,10 +1382,11 @@ async def process_chat_response(
                 if content_blocks[-1]["type"] == "text":
                     for start_tag, end_tag in tags:
                         # Match start tag e.g., <tag> or <tag attr="value">
-                        if content_type != "reasoning":
-                            start_tag_pattern = rf"<{re.escape(start_tag)}(\s.*?)?>"
-                        else:
-                            start_tag_pattern = rf"^\s*<{re.escape(start_tag)}(\s.*?)?>"
+                        # if content_type != "reasoning":
+                        #     start_tag_pattern = rf"<{re.escape(start_tag)}(\s.*?)?>"
+                        # else:
+                        #     start_tag_pattern = rf"^\s*<{re.escape(start_tag)}(\s.*?)?>"
+                        start_tag_pattern = rf"<{re.escape(start_tag)}(\s.*?)?>"
 
                         match = re.search(start_tag_pattern, content)
                         if match:
@@ -1438,10 +1436,11 @@ async def process_chat_response(
                     start_tag = content_blocks[-1]["start_tag"]
                     end_tag = content_blocks[-1]["end_tag"]
                     # Match end tag e.g., </tag>
-                    if content_type != "reasoning":
-                        end_tag_pattern = rf"^\s*<{re.escape(end_tag)}>"
-                    else:
-                        end_tag_pattern = rf"<{re.escape(end_tag)}>"
+                    # if content_type != "reasoning":
+                    #     end_tag_pattern = rf"^\s*<{re.escape(end_tag)}>"
+                    # else:
+                    #     end_tag_pattern = rf"<{re.escape(end_tag)}>"
+                    end_tag_pattern = rf"<{re.escape(end_tag)}>"
 
                     # Check if the content has the end tag
                     if re.search(end_tag_pattern, content):

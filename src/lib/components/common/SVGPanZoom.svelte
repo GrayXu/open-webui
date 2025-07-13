@@ -31,8 +31,11 @@
 		instance = panzoom(sceneElement, {
 			bounds: true,
 			boundsPadding: 0.1,
-
-			zoomSpeed: 0.065
+			zoomSpeed: 0.065,
+			beforeWheel: function(e) {
+				// 禁用滚轮缩放，返回 true 表示忽略滚轮事件
+				return true;
+			}
 		});
 	}
 	const resetPanZoomViewport = () => {

@@ -1510,6 +1510,8 @@ export const extractContentFromFile = async (file, pdfjsLib = null) => {
 	} catch (err) {
 		throw new Error('Unsupported or non-text file type: ' + (file.name || type));
 	}
+};
+
 // 共享的DOMPurify配置
 export const getDOMPurifyConfig = () => ({
 	ALLOWED_TAGS: [

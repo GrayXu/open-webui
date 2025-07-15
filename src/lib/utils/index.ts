@@ -91,11 +91,6 @@ export const sanitizeResponseContent = (content: string) => {
 		.replace(/<\|[a-z]*$/, '')
 		.replace(/<\|[a-z]+\|$/, '')
 		.replace(/<$/, '')
-<<<<<<< HEAD
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-=======
->>>>>>> 72db26b5d (allow html tags)
 		.replaceAll(/<\|[a-z]+\|>/g, ' ')
 		.trim();
 };
@@ -1332,7 +1327,6 @@ export const slugify = (str: string): string => {
 	);
 };
 
-<<<<<<< HEAD
 export const extractInputVariables = (text: string): Record<string, any> => {
 	const regex = /{{\s*([^|}\s]+)\s*\|\s*([^}]+)\s*}}/g;
 	const regularRegex = /{{\s*([^|}\s]+)\s*}}/g;
@@ -1543,7 +1537,6 @@ export const extractContentFromFile = async (file: File) => {
 	} catch (err) {
 		throw new Error('Unsupported or non-text file type: ' + (file.name || type));
 	}
-=======
 // 共享的DOMPurify配置
 export const getDOMPurifyConfig = () => ({
 	ALLOWED_TAGS: [
@@ -1566,7 +1559,6 @@ export const getDOMPurifyConfig = () => ({
 // 便捷的sanitize函数
 export const sanitizeHtml = (html: string) => {
 	return DOMPurify.sanitize(html, getDOMPurifyConfig());
->>>>>>> 72db26b5d (allow html tags)
 };
 
 export const getAge = (birthDate) => {

@@ -1256,7 +1256,7 @@ async def chat_memory_handler(
                 user_context += f"{doc_idx + 1}. [{created_at_date}] {doc}\n"
 
     form_data["messages"] = add_or_update_system_message(
-        f"User Context:\n{user_context}\n", form_data["messages"], append=True
+        f"User Context (from previous conversations, may not be relevant to current conversation, use with caution):\n{user_context}\n", form_data["messages"], append=True
     )
 
     return form_data

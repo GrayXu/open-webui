@@ -8,6 +8,8 @@ import isToday from 'dayjs/plugin/isToday';
 import isYesterday from 'dayjs/plugin/isYesterday';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 
+import DOMPurify from 'dompurify';
+
 dayjs.extend(relativeTime);
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
@@ -78,12 +80,11 @@ export const replaceTokens = (content, char, user) => {
 };
 
 export const sanitizeResponseContent = (content: string) => {
+	// 只清理模型输出的特殊标记，不转义任何HTML标签
 	return content
 		.replace(/<\|[a-z]*$/, '')
 		.replace(/<\|[a-z]+\|$/, '')
 		.replace(/<$/, '')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
 		.replaceAll(/<\|[a-z]+\|>/g, ' ')
 		.trim();
 };
@@ -1570,6 +1571,30 @@ export const extractContentFromFile = async (file: File) => {
 	} catch (err) {
 		throw new Error('Unsupported or non-text file type: ' + (file.name || type));
 	}
+};
+
+// 共享的DOMPurify配置
+export const getDOMPurifyConfig = () => ({
+	ALLOWED_TAGS: [
+		'div', 'span', 'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li',
+		'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre',
+		'table', 'thead', 'tbody', 'tr', 'td', 'th', 'a', 'img',
+		'video', 'audio', 'source', 'canvas', 'svg', 'path', 'circle', 'rect',
+		'small', 'mark', 'del', 'ins', 'sub', 'sup', 'hr', 'details', 'summary'
+	],
+	ALLOWED_ATTR: [
+		'style', 'class', 'id', 'title', 'alt', 'src', 'href', 'target',
+		'width', 'height', 'controls', 'autoplay', 'loop', 'muted',
+		'colspan', 'rowspan', 'align', 'valign', 'color', 'size',
+		'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'cx', 'cy', 'r', 'x', 'y'
+	],
+	ALLOW_DATA_ATTR: true, // 允许data-*属性
+	KEEP_CONTENT: true // 保留被移除标签的内容
+});
+
+// 便捷的sanitize函数
+export const sanitizeHtml = (html: string) => {
+	return DOMPurify.sanitize(html, getDOMPurifyConfig());
 };
 
 export const getAge = (birthDate) => {

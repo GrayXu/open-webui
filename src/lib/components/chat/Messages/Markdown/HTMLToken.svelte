@@ -3,6 +3,7 @@
 	import type { Token } from 'marked';
 
 	import { WEBUI_BASE_URL } from '$lib/constants';
+	import { getDOMPurifyConfig } from '$lib/utils';
 	import Source from './Source.svelte';
 	import { settings } from '$lib/stores';
 
@@ -14,7 +15,8 @@
 	let html: string | null = null;
 
 	$: if (token.type === 'html' && token?.text) {
-		html = DOMPurify.sanitize(token.text);
+		// 直接使用原始HTML，不进行任何过滤
+		html = token.text;
 	} else {
 		html = null;
 	}
@@ -36,7 +38,7 @@
 				allowfullscreen
 			></video>
 		{:else}
-			{token.text}
+			{@html html}
 		{/if}
 	{:else if html && html.includes('<audio')}
 		{@const audio = html.match(/<audio[^>]*>([\s\S]*?)<\/audio>/)}
@@ -50,7 +52,7 @@
 				controls
 			></audio>
 		{:else}
-			{token.text}
+			{@html html}
 		{/if}
 	{:else if token.text && token.text.match(/<iframe\s+[^>]*src="https:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})(?:\?[^"]*)?"[^>]*><\/iframe>/)}
 		{@const match = token.text.match(
@@ -82,7 +84,7 @@
 				onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+'px';"
 			></iframe>
 		{:else}
-			{token.text}
+			{@html html}
 		{/if}
 	{:else if token.text && token.text.includes('<status')}
 		{@const match = token.text.match(/<status title="([^"]+)" done="(true|false)" ?\/?>/)}
@@ -122,11 +124,6 @@
 	{:else if token.text.includes(`<source_id`)}
 		<Source {id} {token} onClick={onSourceClick} />
 	{:else}
-		{@const br = token.text.match(/<br\s*\/?>/)}
-		{#if br}
-			<br />
-		{:else}
-			{token.text}
-		{/if}
+		{@html html}
 	{/if}
 {/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
+	import cjkEmphasisExtension from '$lib/utils/marked/cjk-emphasis-extension';
 
 	marked.use({
 		breaks: true,
@@ -27,6 +28,7 @@
 			}
 		}
 	});
+	marked.use(cjkEmphasisExtension());
 
 	import TurndownService from 'turndown';
 	import { gfm } from '@joplin/turndown-plugin-gfm';

@@ -1,3 +1,5 @@
+import cjkEmphasisExtension from '$lib/utils/marked/cjk-emphasis-extension';
+
 // Helper function to find matching closing tag
 function findMatchingClosingTag(src: string, openTag: string, closeTag: string): number {
 	let depth = 1;
@@ -89,6 +91,6 @@ function detailsExtension() {
 
 export default function (options = {}) {
 	return {
-		extensions: [detailsExtension(options)]
+		extensions: [detailsExtension(options), cjkEmphasisExtension()]
 	};
 }

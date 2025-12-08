@@ -3,6 +3,7 @@
 	export let selectedModelId = '';
 
 	import { marked } from 'marked';
+	import cjkEmphasisExtension from '$lib/utils/marked/cjk-emphasis-extension';
 	// Configure marked with extensions
 	marked.use({
 		breaks: true,
@@ -29,6 +30,7 @@
 			}
 		}
 	});
+	marked.use(cjkEmphasisExtension());
 
 	import { toast } from 'svelte-sonner';
 

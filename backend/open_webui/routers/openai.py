@@ -476,9 +476,13 @@ async def get_filtered_models(models, user, db=None):
     filtered_models = []
     for model in models.get("data", []):
         model_info = model_infos.get(model["id"])
-        if model_info:
-            if user.id == model_info.user_id or model_info.id in accessible_model_ids:
-                filtered_models.append(model)
+        if not model_info:
+            # Provider/base models without DB entries default to public-read.
+            filtered_models.append(model)
+            continue
+
+        if user.id == model_info.user_id or model_info.id in accessible_model_ids:
+            filtered_models.append(model)
     return filtered_models
 
 
@@ -988,13 +992,6 @@ async def generate_chat_completion(
                     status_code=403,
                     detail="Model not found",
                 )
-    elif not bypass_filter:
-        if user.role != "admin":
-            raise HTTPException(
-                status_code=403,
-                detail="Model not found",
-            )
-
     # Check if model is already in app state cache to avoid expensive get_all_models() call
     models = request.app.state.OPENAI_MODELS
     if not models or model_id not in models:

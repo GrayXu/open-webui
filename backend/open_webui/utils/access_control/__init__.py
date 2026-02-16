@@ -342,5 +342,6 @@ async def check_model_access(
             if not await has_base_model_access(user.id, model_info, user_group_ids=user_group_ids):
                 raise HTTPException(status_code=403, detail='Model not found')
     else:
-        if user.role != 'admin':
-            raise HTTPException(status_code=403, detail='Model not found')
+        # Raw provider/base models may not have a DB row yet. Treat them as
+        # public-read until explicit per-model ACL exists.
+        return

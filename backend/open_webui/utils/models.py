@@ -395,8 +395,10 @@ async def check_model_access(user, model, db=None):
     else:
         model_info = await Models.get_model_by_id(model.get('id'), db=db)
         if not model_info:
-            raise Exception('Model not found')
-        elif not (
+            # Provider/base models that only exist upstream (not persisted in DB yet)
+            # are treated as public by default.
+            return
+        if not (
             user.id == model_info.user_id
             or await AccessGrants.has_access(
                 user_id=user.id,
@@ -453,16 +455,16 @@ async def get_filtered_models(models, user, db=None):
                 continue
 
             model_info = model_infos.get(model['id'])
-            if model_info:
-                if (
-                    (user.role == 'admin' and BYPASS_ADMIN_ACCESS_CONTROL)
-                    or user.id == model_info.get('user_id')
-                    or model['id'] in accessible_model_ids
-                ):
-                    filtered_models.append(model)
-            elif user.role == 'admin':
-                # No DB entry means no access control configured yet;
-                # only admins can see unconfigured models.
+            if not model_info:
+                # Provider/base models without DB entries default to public-read.
+                filtered_models.append(model)
+                continue
+
+            if (
+                (user.role == 'admin' and BYPASS_ADMIN_ACCESS_CONTROL)
+                or user.id == model_info.get('user_id')
+                or model['id'] in accessible_model_ids
+            ):
                 filtered_models.append(model)
 
         return filtered_models

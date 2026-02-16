@@ -429,9 +429,13 @@ async def get_filtered_models(models, user, db=None):
     filtered_models = []
     for model in models.get('models', []):
         model_info = model_infos.get(model['model'])
-        if model_info:
-            if user.id == model_info.user_id or model_info.id in accessible_model_ids:
-                filtered_models.append(model)
+        if not model_info:
+            # Provider/base models without DB entries default to public-read.
+            filtered_models.append(model)
+            continue
+
+        if user.id == model_info.user_id or model_info.id in accessible_model_ids:
+            filtered_models.append(model)
     return filtered_models
 
 
@@ -1132,7 +1136,6 @@ async def generate_chat_completion(
         await check_model_access(user, model_info, bypass_filter)
     else:
         await check_model_access(user, None, bypass_filter)
-
     url, url_idx = await get_ollama_url(request, payload['model'], url_idx)
     api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
         str(url_idx),
@@ -1221,7 +1224,6 @@ async def generate_openai_completion(
         await check_model_access(user, model_info)
     else:
         await check_model_access(user, None)
-
     url, url_idx = await get_ollama_url(request, payload['model'], url_idx)
     api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
         str(url_idx),
@@ -1287,7 +1289,6 @@ async def generate_openai_chat_completion(
         await check_model_access(user, model_info)
     else:
         await check_model_access(user, None)
-
     url, url_idx = await get_ollama_url(request, payload['model'], url_idx)
     api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
         str(url_idx),

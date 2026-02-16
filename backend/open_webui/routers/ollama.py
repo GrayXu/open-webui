@@ -439,9 +439,13 @@ async def get_filtered_models(models, user, db=None):
     filtered_models = []
     for model in models.get("models", []):
         model_info = model_infos.get(model["model"])
-        if model_info:
-            if user.id == model_info.user_id or model_info.id in accessible_model_ids:
-                filtered_models.append(model)
+        if not model_info:
+            # Provider/base models without DB entries default to public-read.
+            filtered_models.append(model)
+            continue
+
+        if user.id == model_info.user_id or model_info.id in accessible_model_ids:
+            filtered_models.append(model)
     return filtered_models
 
 
@@ -1354,13 +1358,6 @@ async def generate_chat_completion(
                     status_code=403,
                     detail="Model not found",
                 )
-    elif not bypass_filter:
-        if user.role != "admin":
-            raise HTTPException(
-                status_code=403,
-                detail="Model not found",
-            )
-
     url, url_idx = await get_ollama_url(request, payload["model"], url_idx)
     api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
         str(url_idx),
@@ -1465,13 +1462,6 @@ async def generate_openai_completion(
                     status_code=403,
                     detail="Model not found",
                 )
-    else:
-        if user.role != "admin":
-            raise HTTPException(
-                status_code=403,
-                detail="Model not found",
-            )
-
     url, url_idx = await get_ollama_url(request, payload["model"], url_idx)
     api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
         str(url_idx),
@@ -1553,13 +1543,6 @@ async def generate_openai_chat_completion(
                     status_code=403,
                     detail="Model not found",
                 )
-    else:
-        if user.role != "admin":
-            raise HTTPException(
-                status_code=403,
-                detail="Model not found",
-            )
-
     url, url_idx = await get_ollama_url(request, payload["model"], url_idx)
     api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
         str(url_idx),

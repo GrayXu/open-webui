@@ -180,11 +180,9 @@ def serialize_output(output: list) -> str:
             continue
 
         if item_type == "message":
-            for content_part in item.get("content", []):
-                if "text" in content_part:
-                    text = content_part.get("text", "").strip()
-                    if text:
-                        content = f"{content}{text}\n"
+            text = _extract_text(item.get("content", []))
+            if text:
+                content = f"{content}{text}"
 
         elif item_type == "function_call":
             # Render tool call inline with its result (if available)

@@ -65,6 +65,35 @@ def test_serialize_output_keeps_late_reasoning_in_the_top_block_while_streaming(
     assert 'done="false"' in rendered
     assert rendered.index("Late thought") < rendered.index("Visible answer")
 
+def test_serialize_output_does_not_insert_newline_between_message_segments():
+    output = [
+        {
+            "type": "reasoning",
+            "status": "completed",
+            "duration": 1,
+            "content": [{"type": "output_text", "text": "Thought 1"}],
+        },
+        {
+            "type": "message",
+            "content": [{"type": "output_text", "text": "Answer"}],
+        },
+        {
+            "type": "reasoning",
+            "status": "completed",
+            "duration": 1,
+            "content": [{"type": "output_text", "text": "Thought 2"}],
+        },
+        {
+            "type": "message",
+            "content": [{"type": "output_text", "text": " continues"}],
+        },
+    ]
+
+    rendered = serialize_output(output)
+
+    assert "Answer continues" in rendered
+    assert "Answer\n continues" not in rendered
+
 
 def test_serialize_output_keeps_openai_tool_calls_when_reasoning_is_hoisted():
     output = [

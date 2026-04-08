@@ -61,6 +61,7 @@
 	export let onChange = (e) => {};
 
 	export let toolServers = [];
+	export let uploadPending = false;
 
 	export let dragged = false;
 
@@ -226,6 +227,7 @@
 					bind:dragged
 					{pendingOAuthTools}
 					{toolServers}
+					{uploadPending}
 					{stopResponse}
 					{createMessagePair}
 					placeholder={$i18n.t('How can I help you today?')}

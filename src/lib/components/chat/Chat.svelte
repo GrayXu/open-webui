@@ -120,6 +120,15 @@
 
 	let messageInput: MessageInput | undefined;
 
+	let uploadPending = false;
+	let pendingSuggestedSubmit:
+		| {
+				prompt: string;
+				uploadingFileKeys: string[];
+		  }
+		| null = null;
+	let resolvingPendingSuggestedSubmit = false;
+
 	let autoScroll = true;
 	let processing = '';
 	let messagesContainerElement: HTMLDivElement;
@@ -251,14 +260,81 @@
 
 		if (type === 'prompt') {
 			// Handle prompt selection
-			messageInput?.setText(data, async () => {
-				if (!($settings?.insertSuggestionPrompt ?? false)) {
-					await tick();
-					submitHandler(prompt);
-				}
-			});
+				messageInput?.setText(data, async (text) => {
+					if (!($settings?.insertSuggestionPrompt ?? false)) {
+						await queueSuggestedPromptSubmit(text);
+					}
+				});
 		}
 	};
+
+	const getTrackedUploadKey = (file) =>
+		file?.itemId ??
+		file?.id ??
+		file?.url ??
+		`${file?.type ?? 'file'}:${file?.name ?? ''}:${file?.size ?? ''}:${file?.collection_name ?? ''}`;
+
+	const getUploadingFiles = () =>
+		files.filter((file) => file.type !== 'image' && file.status === 'uploading');
+
+	const clearPendingSuggestedSubmit = () => {
+		pendingSuggestedSubmit = null;
+		uploadPending = false;
+	};
+
+	const queueSuggestedPromptSubmit = async (text: string) => {
+		const uploadingFiles = getUploadingFiles();
+
+		if (uploadingFiles.length === 0) {
+			clearPendingSuggestedSubmit();
+			await tick();
+			submitPrompt(text);
+			return;
+		}
+
+		pendingSuggestedSubmit = {
+			prompt: text,
+			uploadingFileKeys: uploadingFiles.map((file) => getTrackedUploadKey(file))
+		};
+		uploadPending = true;
+	};
+
+	const maybeSubmitPendingSuggestedPrompt = async () => {
+		if (!pendingSuggestedSubmit || resolvingPendingSuggestedSubmit) {
+			return;
+		}
+
+		const trackedStatuses = pendingSuggestedSubmit.uploadingFileKeys.map((key) => {
+			const file = files.find((item) => getTrackedUploadKey(item) === key);
+			return file?.status;
+		});
+
+		if (trackedStatuses.some((status) => status == null || status === 'error')) {
+			clearPendingSuggestedSubmit();
+			return;
+		}
+
+		if (
+			trackedStatuses.length > 0 &&
+			trackedStatuses.every((status) => status === 'uploaded') &&
+			getUploadingFiles().length === 0
+		) {
+			const text = pendingSuggestedSubmit.prompt;
+			clearPendingSuggestedSubmit();
+
+			resolvingPendingSuggestedSubmit = true;
+			try {
+				await tick();
+				submitPrompt(text);
+			} finally {
+				resolvingPendingSuggestedSubmit = false;
+			}
+		}
+	};
+
+	$: if (pendingSuggestedSubmit) {
+		maybeSubmitPendingSuggestedPrompt();
+	}
 
 	$: if (selectedModels && chatIdProp !== '') {
 		saveSessionSelectedModels();
@@ -2957,6 +3033,7 @@
 									bind:showCommands
 									bind:dragged
 									toolServers={$toolServers}
+									{uploadPending}
 									{generating}
 									{stopResponse}
 									{createMessagePair}
@@ -3038,6 +3115,7 @@
 									bind:dragged
 									{pendingOAuthTools}
 									toolServers={$toolServers}
+									{uploadPending}
 									{stopResponse}
 									{createMessagePair}
 									{onSelect}
